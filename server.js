@@ -1,5 +1,7 @@
 const express = require('express');
 const path = require('path');
+const fs = require("fs");
+const database = require("./db/db.json")
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -11,7 +13,7 @@ app.use(express.urlencoded({
   extended:true
 }));
 
-app.get("*", (req, res) =>{
+app.get("/", (req, res) =>{
   res.sendFile(path.join()(__dirname, '/public/index.html'));
 })
 
@@ -28,23 +30,23 @@ app.route("/api/notes")
 
     .post(function (req, res) {
         let jsonFilePath = path.join(__dirname, "/db/db.json");
-        let newNote = req.body;
+        let newNotes = req.body;
 
 
-        let highestId = 99;
+        let maxId = 99;
 
         for (let i = 0; i < database.length; i++) {
-            let individualNote = database[i];
+            let seperateNotes = database[i];
 
-            if (individualNote.id > highestId) {
+            if (seperateNotes.id > maxId) {
 
-                highestId = individualNote.id;
+                maxId = seperateNotes.id;
             }
         }
 
-        newNote.id = highestId + 1;
+        newNotes.id = maxId + 1;
 
-        database.push(newNote)
+        database.push(newNotes)
 
 
         fs.writeFile(jsonFilePath, JSON.stringify(database), function (err) {
@@ -55,21 +57,19 @@ app.route("/api/notes")
             console.log("Your note was saved!");
         });
 
-        res.json(newNote);
+        res.json(newNotes);
     });
 
     app.delete("/api/notes/:id", function (req, res) {
       let jsonFilePath = path.join(__dirname, "/db/db.json");
-      // request to delete note by id.
+      
       for (let i = 0; i < database.length; i++) {
-  
           if (database[i].id == req.params.id) {
-              // Splice takes i position, and then deletes the 1 note.
               database.splice(i, 1);
               break;
           }
       }
-      // Write the db.json file again.
+
       fs.writeFileSync(jsonFilePath, JSON.stringify(database), function (err) {
   
           if (err) {
